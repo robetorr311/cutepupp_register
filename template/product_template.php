@@ -19,14 +19,6 @@
             <div class="row">
               <div class="col-md-12">
                 <div class="form-group">  
-                <label for="short_desc">Short Description</label>
-                  <input type="text" id="short_desc" name="short_desc" class="form-control" placeholder="Short Description">
-                </div>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-md-12">
-                <div class="form-group">  
                 <label for="desc">Description</label>
                   <textarea id="desc" name="desc" class="form-control" placeholder="Description"></textarea>
                 </div>

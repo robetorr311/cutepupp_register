@@ -40,7 +40,7 @@ jQuery(document).ready( function($) {
           formData: { action: 'uploadfile' },
           fileName:"myfile",
           allowedTypes: "jpg,png,gif",
-          maxFileSize: "97152",
+          maxFileSize: "398562",
           onSuccess:function(data)
            {
              jQuery("#picture").val(data); 

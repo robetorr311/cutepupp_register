@@ -337,7 +337,7 @@
      $sql319="insert into $table_name4 (name) values ('Yorkinese');";
      $sql320="insert into $table_name4 (name) values ('Yorkshire Terrier');";
      $table_image= $wpdb->prefix . "image";
-     $sql321 = " CREATE TABLE $table_image(  id int(11) NOT NULL,  name text NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=latin1;";    
+     $sql321 = " CREATE TABLE $table_image(  id int(11) NOT NULL,  name text NOT NULL, formid int(11), post_id int(11) ) ENGINE=InnoDB DEFAULT CHARSET=latin1;";    
      $sql322= "ALTER TABLE $table_image ADD PRIMARY KEY(id);";
      $sql323="ALTER TABLE $table_image CHANGE id id INT(11) NOT NULL AUTO_INCREMENT;";
      $wpdb->query($sql4);
