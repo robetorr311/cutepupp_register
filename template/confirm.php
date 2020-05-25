@@ -4,9 +4,10 @@
                <span>
                 <h4>
                   <div class="alert alert-success">
-                   <i class="fa fa-mail"></i><br>
-                   <strong>Mail Sended! </strong> <br><br>
-                   <a type="button" class="button secondary is-larger btn-landing" href="<?php echo get_site_url(); ?>">Close Window</a>
+                   <br>
+                   <?php echo $message; ?><br><br>
+                   <br><br>
+                   <a type="button" class="button secondary is-larger btn-landing" href="<?php echo get_site_url().'/index.php'; ?>">Close Window</a>     <?php echo $sql_meta; ?>            
                   </div>
                 </h4>
                </span>

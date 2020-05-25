@@ -17,5 +17,5 @@ jQuery(document).ready( function($) {
     "bInfo": true,
     "bAutoWidth": false,
     "lengthMenu":[[10,25,50,100,200,-1],[10,25,50,100,200,"All"]]    
-  });  
+  }); 
 });

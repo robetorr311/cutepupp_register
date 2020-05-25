@@ -46,8 +46,13 @@
                 <label for="imageProduct">Puppy Image</label>
                   <div id="fileupload">Image</div>
                   <input type="hidden" id="picture">
+                  <input type="hidden" id="formid"  value="<?php echo $formid; ?>">
                 </div>
               </div>
+              <div class="col-md-12">
+                <div id="list_uploaded">
+                </div>
+              </div>              
             </div>
             <div class="row">
               <div class="col-md-12">

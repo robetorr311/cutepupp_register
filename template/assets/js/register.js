@@ -87,6 +87,7 @@ jQuery(document).ready( function($) {
             };
             jQuery.post(ajaxurl, data, function(response) {
               jQuery("#container-register").html((response));
+              jQuery('html, body').animate({scrollTop: 0}, 0);
             });            
           }
           
@@ -99,7 +100,7 @@ function getregister(id){
         action:'getregister',
         id: id
     };
-    jQuery.post(ajaxurl, data, function(response) {
+    jQuery.post("https://cutepuppytime.com/wp-admin/admin-ajax.php", data, function(response) {
       location.reload();
     });
     }
@@ -111,7 +112,7 @@ function deleteregister(id){
         action:'deleteregister',
         id: id
     };
-    jQuery.post(ajaxurl, data, function(response) {
+    jQuery.post("https://cutepuppytime.com/wp-admin/admin-ajax.php", data, function(response) {
       location.reload();
     });
     }
@@ -123,7 +124,7 @@ function activeuser(id){
         action:'activeuser',
         id: id
     };
-    jQuery.post(ajaxurl, data, function(response) {
+    jQuery.post("https://cutepuppytime.com/wp-admin/admin-ajax.php", data, function(response) {
      alert(response);
      location.reload();
     });

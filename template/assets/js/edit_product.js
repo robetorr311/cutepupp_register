@@ -8,16 +8,11 @@ jQuery(document).ready( function($) {
                  price:{ required: true,
                          number: true
                        },
-                 picture:"required",
                  desc: "required",
-                 short_desc: "required",
                  image:"required",
           },
-          picture: "required",
           messages: {
              puppy_name: "Please enter puppy name",
-             picture: "Please select an image of puppy",
-             short_desc: "Please enter short description",
              desc: "please enter description",
              price: {
               required: "Please enter price",
@@ -27,29 +22,45 @@ jQuery(document).ready( function($) {
           errorClass: "error_validate",
           inputContainer: "form-group",
           submitHandler: function(response){
-            var params=jQuery("#productForm").serialize();
+            var params=jQuery("#editproductForm").serialize();
+            var idproduct=jQuery("#id_product").val();
             var picture=jQuery("#picture").val();
             var data= {
-              action:'addproduct',
-              picture: picture,
+              action:'updateproduct',
+              idproduct: idproduct,
+              formid: formid,
               params:params
             };
-            jQuery.post("https://cutepuppytime.com/wp-admin/admin-ajax.php", data, function(response) {
+              jQuery.post("http://localhost/cutepupp/wp-admin/admin-ajax.php", data, function(response) {
               jQuery("#container-product").html((response));
+              jQuery('html, body').animate({scrollTop: 0}, 0);
             });            
           }
         });
-        jQuery("#fileupload").uploadFile({
-          url: "https://cutepuppytime.com/wp-admin/admin-ajax.php",
-          formData: { action: 'uploadfile' },
+        var picture=jQuery('#picture').val(); 
+        jQuery("#fileupload2").uploadFile({          
+          url: "http://localhost/cutepupp/wp-admin/admin-ajax.php",
+          formData: { action: 'uploadfile', image: picture },
           fileName:"myfile",
           allowedTypes: "jpg,png,gif",
-          maxFileSize: "2097152",
+          maxFileSize: "97152",
           onSuccess:function(data)
            {
-              $('#picture').val(data); 
+             jQuery("#picture").val(data); 
+             save_image(formid); 
            }
          });
          
 }); 
-
+function deleteproduct(id){
+    if (confirm("Are you sure?")) {
+    var data= {
+        action:'deleteproduct',
+        id: id
+    };
+    jQuery.post("https://cutepuppytime.com/wp-admin/admin-ajax.php", data, function(response) {
+      location.reload();
+    });
+    }
+    return false;
+}

@@ -1,11 +1,11 @@
 <?php
    /*
       Plugin Name: Cutepupp_register
-      Plugin URI: http://cutepupp.com
+      Plugin URI: https://www.cutepuppytime.com
       Description: General settings to register users
       Version: 1
       Author: Robert Torres
-      Author URI: http://robetorr.info
+      Author URI: https://robetorr.net
    */
    
    function cutepupp_register_install(){
@@ -336,6 +336,10 @@
      $sql318="insert into $table_name4 (name) values ('Yorkiepoo');";
      $sql319="insert into $table_name4 (name) values ('Yorkinese');";
      $sql320="insert into $table_name4 (name) values ('Yorkshire Terrier');";
+     $table_image= $wpdb->prefix . "image";
+     $sql321 = " CREATE TABLE $table_image(  id int(11) NOT NULL,  name text NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=latin1;";    
+     $sql322= "ALTER TABLE $table_image ADD PRIMARY KEY(id);";
+     $sql323="ALTER TABLE $table_image CHANGE id id INT(11) NOT NULL AUTO_INCREMENT;";
      $wpdb->query($sql4);
      $wpdb->query($sql5);
      $wpdb->query($sql6);
@@ -760,12 +764,7 @@
                    'toronto' => $toronto,
                    'vancouver' => $vancouver,
                    'anchorage' => $anchorage);
-        $wpdb->insert($table_name2,$data2);
-        $subject="Cutepuppytime register";
-
-        $message="<img src='https://cutepuppytime.com/wp-content/uploads/2018/04/Logo-150x150.png'></img>";
-        $message.="<p>To confirmate and complete registration please click here -> <a href='". get_site_url()."/confirm?id=".$idregister."'>Confirm</a></p> ";
-         wp_mail($email, "Subject", $message);         
+        $wpdb->insert($table_name2,$data2);       
          $regis="ok"; 
         include('template/success.php'); 
         wp_die();  
@@ -828,6 +827,65 @@
       <?php
       include('template/view_register.php');        
    }
+  function get_attached($id){
+    global $wpdb;    
+    $table_name= $wpdb->prefix . "postmeta";
+    $sql="SELECT * FROM $table_name where post_id=$id and meta_key='_wp_attached_file';";
+     $results= $wpdb->get_results("SELECT * FROM $table_name where post_id=$id and meta_key='_wp_attached_file';");
+       foreach ($results as $result) {
+         $attach=$result->meta_value;
+       }
+    return $attach;
+  }
+  function get_price($id){
+    global $wpdb;    
+    $table_name= $wpdb->prefix . "postmeta";
+     $results= $wpdb->get_results("SELECT * FROM $table_name where post_id=$id and meta_key='_sale_price';");
+       foreach ($results as $result) {
+         $attach=$result->meta_value;
+       }
+    return $attach;
+  }
+function add_gallery($name,$post_id){
+        global $wpdb;    
+        $dir = plugin_dir_path( __DIR__ );
+        $output_dir = $dir."cutepupp_register/template/assets/uploads/";
+        require_once( ABSPATH . 'wp-admin/includes/image.php' );
+          $filename = $output_dir.$name;   
+          $filetype = wp_check_filetype( basename( $filename ), null );     
+          $wp_upload_dir = wp_upload_dir();
+          $unique_file_name = wp_unique_filename( $wp_upload_dir['path'], $key->name );
+          $fname = basename( $unique_file_name );
+          if( wp_mkdir_p( $wp_upload_dir['path'] ) ) {
+            $file = $wp_upload_dir['path'] . '/' . $fname;
+          } 
+          else {
+            $file = $wp_upload_dir['basedir'] . '/' . $fname;
+          }
+          $guid=$wp_upload_dir['url'] . '/' . basename( $fname );
+          $filetype=wp_check_filetype( $filename );
+          copy( $filename, $file );
+          $attachment = array(
+            'guid'           => $guid, 
+            'post_mime_type' => $filetype['type'],
+            'post_title'     => preg_replace( '/\.[^.]+$/', '', basename( $filename ) ),
+            'post_content'   => '',
+            'post_status'    => 'inherit'
+           );
+           $attach_id = wp_insert_attachment( $attachment, $file, $post_id );
+           $attach_id_array = get_post_meta($post_id,'_product_image_gallery', true);
+           $attach_id_array .= ','.$attach_id;
+           update_post_meta($post_id,'_product_image_gallery',$attach_id_array);
+           $attach_data = wp_generate_attachment_metadata( $attach_id, $file );
+           wp_update_attachment_metadata( $attach_id, $attach_data );
+           $image_attached=get_attached($post_id);
+           if(empty($image_attached)){
+             $table_postmeta= $wpdb->prefix . "postmeta";
+             $uploaded_path=str_replace($wp_upload_dir['basedir'] . '/', "", $file);
+             $sql_meta="INSERT INTO $table_postmeta (post_id,meta_key,meta_value) values ($post_id,'_product_image_gallery','$uploaded_path')";
+             $wpdb->query($sql_meta);          
+           }  
+   }    
    function updateregister(){
       global $wpdb;
       $params=$_POST['params'];
@@ -905,7 +963,7 @@
       $id=$_POST['id'];
       $website=get_site_url();
       $table_name= $wpdb->prefix . "register";
-      $table_name2= $wpdb->prefix . "users";
+      $table_name2= $wpdb->prefix . "users";   
       $results_disabled = $wpdb->get_results("SELECT * FROM $table_name where id=$id;");
       foreach ($results_disabled as $key) {
         $username=$key->username;
@@ -939,6 +997,18 @@
         $wpdb->query($sql);
         $sql2="UPDATE $table_name2 SET user_pass=md5('$password') WHERE id=$user_id;";
         $wpdb->query($sql2);
+        $subject="Cutepuppytime register";
+        $message="<!DOCTYPE html>";
+        $message.="<html>";
+        $message.="<head>";
+        $message.="<title>Message</title>";
+        $message.="</head>";
+        $message.="<body>";
+        $message.="<img src='https://cutepuppytime.com/wp-content/uploads/2018/04/Logo-150x150.png'></img>";
+        $message.="<p>Your register in CutePuppyTime has been approved! Now you can login and upload your puppys! Thanks!!</p> ";
+        $message.="</body>";
+        $message.="</html>";                
+         wp_mail($email, $subject, $message);                
         echo 'Success';
       }
       else {
@@ -949,7 +1019,8 @@
   function updateproduct(){
        global $wpdb;
        $user_id = wp_get_current_user()->ID;
-       $id=$_POST['id_product'];
+       $id_product=$_POST['idproduct'];
+       $picture=$_POST['picture'];
        $params=$_POST['params'];
        $arraysearch=explode('&', $params);
        foreach ($arraysearch as $key => $value) {
@@ -957,8 +1028,7 @@
        }
        $puppy_name= $need['puppy_name'];
        $price=$need['price'];
-       $description=str_replace('+', ' ', $need['description']);
-       $short_desc=str_replace('+', ' ', $need['short_desc']);
+       $description=str_replace('+', ' ', $need['desc']);
        $health=str_replace('+', ' ', $need['health']);
        $iso=str_replace('+', ' ', $need['iso']);
        $shipping=str_replace('+', ' ', $need['shipping']);
@@ -967,8 +1037,7 @@
        if (!empty($iso)){ $iso='$27 FREE'; }
        if (!empty($shipping)){ $shipping='INCLUDED'; }
        if (!empty($guarantee)){ $guarantee='INCLUDED'; }            
-       if (!empty($pedigree)){ $pedigree='INCLUDED'; }      
-        $picture=$_POST['picture'];
+       if (!empty($pedigree)){ $pedigree='INCLUDED'; }
         $post_excerpt="<div class=\"block-singlepup\">";
         $post_excerpt.="<p class=\"alignleft\">Healthcare certificate:</p>";
         $post_excerpt.="<p class=\"alignright\" style=\"text-decoration: line-through;\">".$health."</p>";
@@ -987,7 +1056,7 @@
         $post_excerpt.="<div style=\"clear: both;\"></div>";
         $post_excerpt.="</div>"; 
         $post = array(
-             'ID' => $id,
+             'ID' => $id_product,
              'post_author' => $user_id,
              'post_content' => $description, 
              'post_status' => "publish",
@@ -997,34 +1066,37 @@
              'post_excerpt' => $post_excerpt,
              'comment_status' => 'open'
           );
-        $post_id = wp_update_post( $post, true );
-        wp_set_object_terms( $post_id, 'simple', 'product_type' );
-        update_post_meta( $post_id, '_visibility', 'visible' );
-        update_post_meta( $post_id, '_stock_status', 'instock');
-        update_post_meta( $post_id, 'total_sales', '0' );
-        update_post_meta( $post_id, '_downloadable', 'no' );
-        update_post_meta( $post_id, '_virtual', '' );
-        update_post_meta( $post_id, '_regular_price', '' );
-        update_post_meta( $post_id, '_sale_price', $price );
-        update_post_meta( $post_id, '_purchase_note', '' );
-        update_post_meta( $post_id, '_featured', 'no' );
-        update_post_meta( $post_id, '_weight', '' );
-        update_post_meta( $post_id, '_length', '' );
-        update_post_meta( $post_id, '_width', '' );
-        update_post_meta( $post_id, '_height', '' );
-        update_post_meta( $post_id, '_sku', '' );
-        update_post_meta( $post_id, '_tax_status', 'taxable' );
-        update_post_meta( $post_id, '_tax_class', '' );
-        update_post_meta( $post_id, '_sold_individually', 'yes' );
-        update_post_meta( $post_id, '_product_attributes', array() );
-        update_post_meta( $post_id, '_sale_price_dates_from', '' );
-        update_post_meta( $post_id, '_sale_price_dates_to', '' );
-        update_post_meta( $post_id, '_price', $price );
-        update_post_meta( $post_id, '_sold_individually', 'yes' );
-        update_post_meta( $post_id, '_manage_stock', 'no' );
-        wc_update_product_stock($post_id, $single['qty'], 'set');
-        update_post_meta( $post_id, '_backorders', 'no' );
-        $dir = plugin_dir_path( __DIR__ );;
+        wp_update_post( $post, true );
+        wp_set_object_terms( $id_product, 'simple', 'product_type' );
+        update_post_meta( $id_product, '_visibility', 'visible' );
+        update_post_meta( $id_product, '_stock_status', 'instock');
+        update_post_meta( $id_product, 'total_sales', '0' );
+        update_post_meta( $id_product, '_downloadable', 'no' );
+        update_post_meta( $id_product, '_virtual', '' );
+        update_post_meta( $id_product, '_regular_price', '' );
+        update_post_meta( $id_product, '_sale_price', $price );
+        update_post_meta( $id_product, '_purchase_note', '' );
+        update_post_meta( $id_product, '_featured', 'no' );
+        update_post_meta( $id_product, '_weight', '' );
+        update_post_meta( $id_product, '_length', '' );
+        update_post_meta( $id_product, '_width', '' );
+        update_post_meta( $id_product, '_height', '' );
+        update_post_meta( $id_product, '_sku', '' );
+        update_post_meta( $id_product, '_tax_status', 'taxable' );
+        update_post_meta( $id_product, '_tax_class', '' );
+        update_post_meta( $id_product, '_sold_individually', 'yes' );
+        update_post_meta( $id_product, '_product_attributes', array() );
+        update_post_meta( $id_product, '_sale_price_dates_from', '' );
+        update_post_meta( $id_product, '_sale_price_dates_to', '' );
+        update_post_meta( $id_product, '_price', $price );
+        update_post_meta( $id_product, '_sold_individually', 'yes' );
+        update_post_meta( $id_product, '_manage_stock', 'no' );
+        wc_update_product_stock($id_product, $single['qty'], 'set');
+        update_post_meta( $id_product, '_backorders', 'no' );
+        $dir = plugin_dir_path( __DIR__ );   
+        $table_image=$wpdb->prefix . "image";        
+        $imagesresult=$wpdb->get_results("SELECT * FROM $table_image where post_id=$id_product;");        
+        if(!empty($picture)){
         $output_dir = $dir."cutepupp_register/template/assets/uploads/";
         $filename = $output_dir.$picture;
         $filetype = wp_check_filetype( basename( $filename ), null );    
@@ -1047,67 +1119,49 @@
           'post_content'   => '',
           'post_status'    => 'inherit'
          );
-         $attach_id = wp_insert_attachment( $attachment, $file, $post_id );
+         $attach_id = wp_insert_attachment( $attachment, $file, $id_product );
          require_once( ABSPATH . 'wp-admin/includes/image.php' );
          $attach_data = wp_generate_attachment_metadata( $attach_id, $file );
          wp_update_attachment_metadata( $attach_id, $attach_data );
-         set_post_thumbnail( $post_id, $attach_id );
-         
-         include('template/success.php'); 
+         set_post_thumbnail( $id_product, $attach_id );
+         $image_attached=get_attached($id_product);
+         if(empty($image_attached)){
+           $table_postmeta= $wpdb->prefix . "postmeta";
+           $uploaded_path=str_replace($wp_upload_dir['basedir'] . '/', "", $file);
+           $sql_meta="INSERT INTO $table_postmeta (post_id,meta_key,meta_value) values ($id_product,'_wp_attached_file','$uploaded_path')";
+           $wpdb->query($sql_meta);          
+         }
+         else{
+           $table_postmeta= $wpdb->prefix . "postmeta";
+           $uploaded_path=str_replace($wp_upload_dir['basedir'] . '/', "", $file);
+           $sql_meta="UPDATE $table_postmeta SET meta_value='$uploaded_path' where post_id=$id_product and meta_key='_wp_attached_file';";
+           $wpdb->query($sql_meta);          
+         }
+        }
+
+         include('template/success_product.php'); 
          wp_die();  
   }
   function edit_product(){
     global $wpdb;
     $id_product=$_GET['id']; 
-      $table_name= $wpdb->prefix . "register";
-      $table_name2= $wpdb->prefix . "breeding";
-      $table_name3= $wpdb->prefix . "state";
-      $results_register = $wpdb->get_results("SELECT * FROM $table_name where id=$id;");
-      $results_breeding = $wpdb->get_results("SELECT * FROM $table_name2 where idregister=$id;");
-      foreach ($results_register as $key_register) {
-        $username=$key_register->username;
-        $password=$key_register->password;
-        $firstname=$key_register->firstname;
-        $lastname=$key_register->lastname;
-        $street=$key_register->street;
-        $apt=$key_register->apt;
-        $city=$key_register->city;
-        $code=$key_register->state;
-        $zip=$key_register->zip;
-        $country=$key_register->country;
-        $phone=$key_register->phone;
-        $mobile=$key_register->mobile;
-        $workphone=$key_register->workphone;
-        $email=$key_register->email;
-        $howfound=$key_register->howfound;
-        $howpay=$key_register->howpay;
-        $registration_code=$key_register->registration_code;
+      $table_name= $wpdb->prefix . "posts";
+      $table_name2= $wpdb->prefix . "postmeta";
+      $table_image=$wpdb->prefix . "image";        
+      $imagesresult=$wpdb->get_results("SELECT * FROM $table_image where post_id=$id_product;");          
+      $results = $wpdb->get_results("SELECT * FROM $table_name where ID=$id_product;");
+      foreach ($results as $key) {
+        $post_name=$key->post_name;
+        $post_content=$key->post_content;
+        $post_excerpt=$key->post_excerpt;
       }
-      foreach ($results_breeding as $key_breeding) {
-        $kennel=$key_breeding->kennel;
-        $url=$key_breeding->url;
-        $breeding=$key_breeding->breeding;
-        $breed1=$key_breeding->breed1;
-        $breed2=$key_breeding->breed2;
-        $breed3=$key_breeding->breed3;
-        $breed4=$key_breeding->breed4;
-        $breed5=$key_breeding->breed5;
-        $breed6=$key_breeding->breed6;
-        $contract=$key_breeding->contract;
-        $active=$key_breeding->active;
-        $license=$key_breeding->license;
-        $vet_name=$key_breeding->vet_name;
-        $vet_phone=$key_breeding->vet_phone;
-        $travel_info=$key_breeding->travel_info;
-        $montreal=$key_breeding->montreal;
-        $toronto=$key_breeding->toronto;
-        $vancouver=$key_breeding->vancouver;
-        $anchorage=$key_breeding->anchorage;
-      }
-      $results_states= $wpdb->get_results("SELECT * FROM $table_name3 where code='$code';");
-      foreach ($results_states as $key_st) {
-        $state=$key_st->name;
-      }
+      $health=stripos($post_excerpt, '$44 FREE');
+      $shipping=stripos($post_excerpt, '$27 FREE');
+      $fci=stripos($post_excerpt, 'needle');
+      $chip=stripos($post_excerpt, 'ISO microchip</p><p class=\"alignright\" style=\"text-decoration: line-through;\">INCLUDED');
+      $guarantee=stripos($post_excerpt, '10 year Guarantee</p><p class=\"alignright\">INCLUDED');
+      $post_attach=get_attached($id_product);
+      $post_price=get_price($id_product);
     ?><script type="text/javascript">
      var ajaxurl = "<?php echo admin_url('admin-ajax.php'); ?>";
      </script>
@@ -1117,20 +1171,21 @@
   function view_products(){
     global $wpdb;    
     $user_id = wp_get_current_user()->ID;
+    $table_name= $wpdb->prefix . "posts";
+    
     if($user_id==0){  
       include('template/wrong_user.php');
     }
-    else{
-      ?><script type="text/javascript">
-      var ajaxurl = "<?php echo admin_url('admin-ajax.php'); ?>";
-      </script>
-      <?php    
+    else{ 
+     $sql="SELECT * FROM $table_name where post_author=$user_id and post_type='product' order by post_date;";
+     $results_products= $wpdb->get_results($sql); 
       include('template/view_product_template.php');
     }
   }  
   function addproduct(){
        global $wpdb;
        $user_id = wp_get_current_user()->ID;
+       $table_name= $wpdb->prefix . "register";
        $params=$_POST['params'];
        $arraysearch=explode('&', $params);
        foreach ($arraysearch as $key => $value) {
@@ -1138,8 +1193,7 @@
        }
        $puppy_name= $need['puppy_name'];
        $price=$need['price'];
-       $description=str_replace('+', ' ', $need['description']);
-       $short_desc=str_replace('+', ' ', $need['short_desc']);
+       $description=str_replace('+', ' ', $need['desc']);
        $health=str_replace('+', ' ', $need['health']);
        $iso=str_replace('+', ' ', $need['iso']);
        $shipping=str_replace('+', ' ', $need['shipping']);
@@ -1149,7 +1203,6 @@
        if (!empty($shipping)){ $shipping='INCLUDED'; }
        if (!empty($guarantee)){ $guarantee='INCLUDED'; }            
        if (!empty($pedigree)){ $pedigree='INCLUDED'; }      
-        $picture=$_POST['picture'];
         $post_excerpt="<div class=\"block-singlepup\">";
         $post_excerpt.="<p class=\"alignleft\">Healthcare certificate:</p>";
         $post_excerpt.="<p class=\"alignright\" style=\"text-decoration: line-through;\">".$health."</p>";
@@ -1204,47 +1257,88 @@
         update_post_meta( $post_id, '_manage_stock', 'no' );
         wc_update_product_stock($post_id, $single['qty'], 'set');
         update_post_meta( $post_id, '_backorders', 'no' );
-        $dir = plugin_dir_path( __DIR__ );;
+        $formid=$_POST['formid']; 
+        $table_image=$wpdb->prefix . "image";        
+        $imagesresult=$wpdb->get_results("SELECT * FROM $table_image where formid=$formid;");              
+        $dir = plugin_dir_path( __DIR__ );
         $output_dir = $dir."cutepupp_register/template/assets/uploads/";
-        $filename = $output_dir.$picture;
-        $filetype = wp_check_filetype( basename( $filename ), null );    
-        $wp_upload_dir = wp_upload_dir();
-        $unique_file_name = wp_unique_filename( $wp_upload_dir['path'], $picture );
-        $fname = basename( $unique_file_name );
-        if( wp_mkdir_p( $wp_upload_dir['path'] ) ) {
-          $file = $wp_upload_dir['path'] . '/' . $fname;
-        } 
-        else {
-          $file = $wp_upload_dir['basedir'] . '/' . $fname;
-        }
-        $guid=$wp_upload_dir['url'] . '/' . basename( $fname );
-        copy( $filename, $file );
-        unlink($filename);
-        $attachment = array(
-          'guid'           => $guid, 
-          'post_mime_type' => $filetype['type'],
-          'post_title'     => preg_replace( '/\.[^.]+$/', '', basename( $filename ) ),
-          'post_content'   => '',
-          'post_status'    => 'inherit'
-         );
-         $attach_id = wp_insert_attachment( $attachment, $file, $post_id );
-         require_once( ABSPATH . 'wp-admin/includes/image.php' );
-         $attach_data = wp_generate_attachment_metadata( $attach_id, $file );
-         wp_update_attachment_metadata( $attach_id, $attach_data );
-         set_post_thumbnail( $post_id, $attach_id );
-         
-         include('template/success.php'); 
+        require_once( ABSPATH . 'wp-admin/includes/image.php' );
+        foreach ($imagesresult as $key) {
+          $name=$key->name;
+          $filename = $output_dir.$name;     
+        }       
+          $filetype = wp_check_filetype( basename( $filename ), null );     
+          $wp_upload_dir = wp_upload_dir();
+          $unique_file_name = wp_unique_filename( $wp_upload_dir['path'], $key->name );
+          $fname = basename( $unique_file_name );
+          if( wp_mkdir_p( $wp_upload_dir['path'] ) ) {
+            $file = $wp_upload_dir['path'] . '/' . $fname;
+          } 
+          else {
+            $file = $wp_upload_dir['basedir'] . '/' . $fname;
+          }
+          $guid=$wp_upload_dir['url'] . '/' . basename( $fname );
+          $filetype=wp_check_filetype( $filename );
+          copy( $filename, $file );
+          $attachment = array(
+            'guid'           => $guid, 
+            'post_mime_type' => $filetype['type'],
+            'post_title'     => preg_replace( '/\.[^.]+$/', '', basename( $filename ) ),
+            'post_content'   => '',
+            'post_status'    => 'inherit'
+           );
+           $attach_id = wp_insert_attachment( $attachment, $file, $post_id );
+           set_post_thumbnail( $post_id, $attach_id );
+           $attach_data = wp_generate_attachment_metadata( $attach_id, $file );
+           wp_update_attachment_metadata( $attach_id, $attach_data );
+          $image_attached=get_attached($post_id);
+           if(empty($image_attached)){
+             $table_postmeta= $wpdb->prefix . "postmeta";
+             $uploaded_path=str_replace($wp_upload_dir['basedir'] . '/', "", $file);
+             $sql_meta="INSERT INTO $table_postmeta (post_id,meta_key,meta_value) values ($post_id,'_wp_attached_file','$uploaded_path')";
+             $wpdb->query($sql_meta);          
+           }
+           foreach ($imagesresult as $key_image) {
+             add_gallery($key_image->name,$post_id);
+           }
+           $table_img= $wpdb->prefix . "image";
+           $sql_img="UPDATE $table_img SET post_id=$post_id WHERE formid=$formid;";
+           $wpdb->query($sql_img);        
+         include('template/success_product.php'); 
          wp_die();  
   }
   function uploadfile(){
     global $wpdb;
-    $dir = plugin_dir_path( __DIR__ );;
+    $formid-$_POST['image'];
+    $dir = plugin_dir_path( __DIR__ );
     $output_dir = $dir."cutepupp_register/template/assets/uploads/";
     $filename = $_FILES["myfile"]["name"];
     move_uploaded_file($_FILES["myfile"]["tmp_name"],$output_dir.$filename);
-    echo $output_dir.$filename;
+    echo $filename;
     wp_die();       
   }
+  function uploadlist(){
+    global $wpdb;
+    $formid=$_POST['formid'];
+    $picture=$_POST['picture'];
+    $table_image=$wpdb->prefix . "image";
+    $sql_image="INSERT INTO $table_image (name,formid) VALUES ('$picture',$formid);";
+    $wpdb->query($sql_image);
+    $imagesresult=$wpdb->get_results("SELECT * FROM $table_image where formid=$formid;");
+    include('template/table_image.php'); 
+    wp_die();       
+  } 
+  function deleteimage(){
+    global $wpdb;
+    $id=$_POST['id'];
+    $formid=$_POST['formid'];
+    $table_image=$wpdb->prefix . "image";
+    $sql_image="DELETE FROM $table_image WHERE id=$id;";
+    $wpdb->query($sql_image);
+    $imagesresult=$wpdb->get_results("SELECT * FROM $table_image where formid=$formid;");
+    include('template/table_image.php'); 
+    wp_die();       
+  }   
   function add_newproduct(){
     global $wpdb;    
     $user_id = wp_get_current_user()->ID;
@@ -1252,6 +1346,7 @@
       include('template/wrong_user.php');
     }
     else{
+      $formid=random_int(0, 9999);
       ?><script type="text/javascript">
       var ajaxurl = "<?php echo admin_url('admin-ajax.php'); ?>";
       </script>
@@ -1264,19 +1359,116 @@
     $login=$_GET['login'];    
     include('template/login_template.php');
   }
+  function set_password(){
+    global $wpdb; 
+    $email=$_GET['email'];  
+    include('template/set_password_template.php');     
+  }
+  function deleteproduct(){
+    global $wpdb; 
+    $id=$_POST['id'];
+    $table_name2= $wpdb->prefix . "posts";
+    $sql2="DELETE from $table_name2 WHERE ID=$id;";
+    $wpdb->query($sql2);
+    $table_postmeta= $wpdb->prefix . "postmeta";
+    $sql_meta="DELETE from $table_postmeta WHERE post_id=$id;";
+    $wpdb->query($sql_meta);    
+    echo "Success"; 
+   wp_die();
+   
+  }
+  function setnewpwd(){
+      global $wpdb; 
+    $email=$_POST['email'];
+    $pwd=$_POST['password'];
+    $table_name2= $wpdb->prefix . "users";
+    $sql2="UPDATE $table_name2 SET user_pass=md5('$pwd') WHERE user_email='$email';";
+    $wpdb->query($sql2);      
+    include('template/password_changed.php');     
+   wp_die();
+   
+  }
   function change_password(){
     global $wpdb; 
-    include('template/change_password_template.php');     
+     include('template/change_password_template.php');     
+     wp_die();        
   }
+
   function sendemailpwd(){
     global $wpdb; 
     $email=$_POST['email'];
     $subject="Cutepuppytime recover password";
-    $message="<img src='https://cutepuppytime.com/wp-content/uploads/2018/04/Logo-150x150.png'></img>";
-    $message.="<p>To change your password please click here -> <a href='". get_site_url()."/change-password'>Change</a></p> ";
-    wp_mail($email, "Subject", $message);  
+    $message="<!DOCTYPE html>";
+    $message.="<html>";
+    $message.="<head>";
+    $message.="<title>Message</title>";
+    $message.="</head>";
+    $message.="<body>";
+    $message.="<img src='https://cutepuppytime.com/wp-content/uploads/2018/04/Logo-150x150.png'></img>";
+    $message.="<p>To change your password please click here -> <a href='". get_site_url()."/setpassword/?email=".$email."'>Change</a></p> ";
+    $message.="</body>";
+    $message.="</html>";                
+    wp_mail($email, $subject, $message);  
     include('template/mail_sended.php');     
    wp_die();
+  }
+  function password_template(){
+    global $wpdb; 
+    $email=$_GET['email'];
+     include('template/set_password_template.php');     
+     wp_die();        
+  }
+   function actgetmethod(){
+      global $wpdb;
+      $id=$_GET['id'];
+      if(empty($id)){
+          $message="Sorry none email or account to confirmate!";
+      }
+      else {
+        $website=get_site_url();
+        $table_name= $wpdb->prefix . "register";
+        $table_name2= $wpdb->prefix . "users";
+        $results_disabled = $wpdb->get_results("SELECT * FROM $table_name where id=$id;");
+        foreach ($results_disabled as $key) {
+          $username=$key->username;
+          $password=$key->password;
+          $firstname=$key->firstname;
+          $lastname=$key->lastname;
+          $street=$key->street;
+          $apt=$key->apt;
+          $city=$key->city;
+          $code=$key->state;
+          $zip=$key->zip;
+          $country=$key->country;
+          $phone=$key->phone;
+          $mobile=$key->mobile;
+          $workphone=$key->workphone;
+          $email=$key->email;
+        }
+        $userdata= array(
+          'user_login'  =>  $username,
+          'password'  =>  $password,
+          'user_nicename'  =>  $username,
+          'user_email'  =>  $email,
+          'user_url'  =>  $website,
+          'display_name'  => $username,
+          'role' => 'subscriber'
+        );
+        $user_id=wp_insert_user( $userdata );
+        if ( ! is_wp_error( $user_id ) ) {
+          $table_register= $wpdb->prefix . "register";
+          $sql="UPDATE $table_register SET iduser=$user_id ,  active=1 WHERE id=$id;";
+          $wpdb->query($sql);
+          $sql2="UPDATE $table_name2 SET user_pass=md5('$password') WHERE id=$user_id;";
+          $wpdb->query($sql2);
+          $message= 'Success Your account has been confirmed!';
+        }
+        else {
+          $message= $user_id->get_error_message();
+        }
+      }
+      include('template/confirm.php'); 
+      wp_die();        
   }
 
  
@@ -1294,11 +1486,21 @@ function register_load_scripts() {
 function view_register_load_scripts() {
    wp_enqueue_script( "view_register", plugin_dir_url( __FILE__ ) . 'template/assets/js/view_register.js', array( 'jquery' ) );
 }
+function edit_product_load_scripts() {
+   wp_enqueue_script( "edit_product", plugin_dir_url( __FILE__ ) . 'template/assets/js/edit_product.js', array( 'jquery' ) );
+   wp_localize_script( 'deleteproduct', 'the_ajax_script', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) ); 
+   wp_localize_script( 'view_product', 'the_ajax_script', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) );   
+}
 function add_product_load_scripts() {
    wp_enqueue_script( "add_product", plugin_dir_url( __FILE__ ) . 'template/assets/js/add_product.js', array( 'jquery' ) );
+   wp_localize_script( 'save_image', 'the_ajax_script', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ) ) ); 
+
 }
 function cutepupp_login_load_scripts() {
    wp_enqueue_script( "cutepupp_login", plugin_dir_url( __FILE__ ) . 'template/assets/js/login.js', array( 'jquery' ) );
+}
+function set_password_load_scripts() {
+   wp_enqueue_script( "set_password", plugin_dir_url( __FILE__ ) . 'template/assets/js/set_password.js', array( 'jquery' ) );
 }
 function cutepupp_change_load_scripts() {
    wp_enqueue_script( "cutepupp_change", plugin_dir_url( __FILE__ ) . 'template/assets/js/change_password.js', array( 'jquery' ) );
@@ -1342,9 +1544,6 @@ function ckeditor_load_scripts() {
 function datatables_bootstrap_load_scripts() {
   wp_enqueue_script( "datatables", plugin_dir_url( __FILE__ ) . 'template/assets/js/jquery.dataTables.bootstrap.min.js', array( 'jquery' ) );
 }
-function tables_load_scripts() {
-   wp_enqueue_script( "tables", plugin_dir_url( __FILE__ ) . 'template/assets/js/tables.js', array( 'jquery' ) );
-}
 function validate_load_styles(){
    wp_register_style('screen', plugin_dir_url( __FILE__ ) . 'template/assets/css/screen.css');
    wp_register_style('reset', plugin_dir_url( __FILE__ ) . 'template/assets/css/reset.css');
@@ -1356,7 +1555,13 @@ function validate_load_styles(){
 function validate_load_scripts() {
   wp_enqueue_script( "jquery-validate", plugin_dir_url( __FILE__ ) . 'template/assets/js/jquery.validate.js', array( 'jquery' ) );
 }
-
+function tables_load_scripts() {
+   wp_enqueue_script( "tables", plugin_dir_url( __FILE__ ) . 'template/assets/js/tables.js', array( 'jquery' ) );
+}
+function tipo_de_contenido_html() {
+     return 'text/html';
+}
+add_filter( 'wp_mail_content_type', 'tipo_de_contenido_html' );
 add_shortcode( 'cr_cutepupp_registration', 'cutepupp_registration_shortcode' );
 function cutepupp_registration_shortcode() {
     ob_start();
@@ -1375,6 +1580,19 @@ function add_product_shortcode() {
     add_newproduct();
     return ob_get_clean();
 }
+add_shortcode( 'cr_view_products', 'view_products_shortcode' );
+function view_products_shortcode() {
+    ob_start();
+    view_products();
+    return ob_get_clean();
+}
+add_shortcode( 'cr_edit_product', 'edit_products_shortcode' );
+function edit_products_shortcode() {
+    ob_start();
+    edit_product();
+    return ob_get_clean();
+}
+
 add_shortcode( 'cr_cutepupp_login', 'cutepupp_login_shortcode' );
 function cutepupp_login_shortcode() {
     ob_start();
@@ -1385,6 +1603,18 @@ add_shortcode( 'cr_change_password', 'change_password_shortcode' );
 function change_password_shortcode() {
     ob_start();
     change_password();
+    return ob_get_clean();
+}
+add_shortcode( 'cr_set_password', 'set_password_shortcode' );
+function set_password_shortcode() {
+    ob_start();
+    set_password();
+    return ob_get_clean();
+}
+add_shortcode( 'cr_active_user', 'active_user_shortcode' ); 
+function active_user_shortcode() {
+    ob_start();
+    actgetmethod();
     return ob_get_clean();
 }
 add_action( 'wp_login_failed', 'cutepupp_login_fail' ); 
@@ -1421,21 +1651,27 @@ add_action('wp_print_styles', 'uploadfile_load_styles');
 add_action('wp_head', 'register_load_scripts');
 add_action('wp_head', 'view_register_load_scripts');
 add_action('wp_head', 'add_product_load_scripts');
+add_action('wp_head','edit_product_load_scripts');
 add_action('wp_head', 'cutepupp_login_load_scripts');
 add_action('wp_head', 'cutepupp_change_load_scripts');
+add_action('wp_head','set_password_load_scripts');
 add_action('wp_head', 'bootstrap_load_scripts');
 add_action('wp_head', 'datatables_load_scripts');
 add_action('wp_head', 'ckeditor_load_scripts');
-add_action('wp_head', 'validate_load_scripts');
 add_action('wp_head', 'tables_load_scripts');
 add_action('wp_head', 'upload_load_scripts');
+add_action('wp_head', 'validate_load_scripts');
 add_action('admin_head', 'bootstrap_load_scripts');
 add_action('admin_head', 'datatables_load_scripts');
 add_action('admin_head', 'datatables_bootstrap_load_scripts');
 add_action('admin_head', 'tables_load_scripts');
 add_action('admin_head', 'register_load_scripts');
 add_action('admin_head', 'add_product_load_scripts');
+add_action('admin_head','edit_product_load_scripts');
 add_action('admin_head', 'cutepupp_login_load_scripts');
+add_action('admin_head','set_password_load_scripts');
+add_action('admin_head', 'upload_load_scripts');
+add_action('admin_head', 'validate_load_scripts');
 add_action('admin_head', 'cutepupp_change_load_scripts');
 add_action('wp_ajax_deleteregister', 'deleteregister');
 add_action( 'wp_ajax_nopriv_deleteregister', 'deleteregister' );
@@ -1448,9 +1684,20 @@ add_action('wp_ajax_nopriv_saveregister', 'updateregister');
 
 add_action('wp_ajax_addproduct', 'addproduct');
 add_action( 'wp_ajax_nopriv_addproduct', 'addproduct' );
+add_action('wp_ajax_updateproduct', 'updateproduct');
+add_action( 'wp_ajax_nopriv_updateproduct', 'updateproduct' );
+add_action( 'wp_ajax_nopriv_deleteproduct', 'deleteproduct' );
+add_action('wp_ajax_deleteproduct', 'deleteproduct');
+add_action('wp_ajax_setnewpwd', 'setnewpwd');
+add_action( 'wp_ajax_nopriv_setnewpwd', 'setnewpwd' );
 add_action('wp_ajax_sendemailpwd', 'sendemailpwd');
 add_action( 'wp_ajax_nopriv_sendemailpwd', 'sendemailpwd' );
 add_action('wp_ajax_uploadfile', 'uploadfile');
 add_action( 'wp_ajax_nopriv_uploadfile', 'uploadfile' );
+add_action('wp_ajax_uploadlist', 'uploadlist');
+add_action( 'wp_ajax_nopriv_uploadlist', 'uploadlist' );
+add_action('wp_ajax_deleteimage', 'deleteimage');
+add_action( 'wp_ajax_nopriv_deleteimage', 'deleteimage' );
+
 add_action('activate_cutepupp_register/cutepupp_register.php','cutepupp_register_install');
 add_action('deactivate_cutepupp_register/cutepupp_register.php', 'cutepupp_register_uninstall');

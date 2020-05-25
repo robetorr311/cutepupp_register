@@ -6,9 +6,10 @@
                   <div class="alert alert-success">
                    <i class="fa fa-check"></i><br>
                    <strong>Success!</strong> <br><br>
-                   The register has completed successfully!<br><br>
-                   Please wait for an email after we review your info!<br><br>
-                   <a type="button" class="button secondary is-larger btn-landing" href="<?php echo get_site_url(); ?>">Close Window</a>            
+                   The puppy values was saved successfully!
+                   <br><br>
+                   <br><br>
+                   <a type="button" class="button secondary is-larger btn-landing" href="<?php echo get_site_url(); ?>">Close Window</a>          
                   </div>
                 </h4>
                </span>

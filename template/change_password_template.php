@@ -1,13 +1,9 @@
-<div class="wrap">
-  <div class="postbox-container">
-    <div class="postbox">
-      <div id="container-product" class="alert alert-warning">
+      <div id="sendemail" class="alert alert-warning">
       <br>
         <form id="changepasswordForm"> 
         <span>
           <h4>Change password</h4>
         </span>
-        <input type="hidden" value="<?php echo site_url(); ?>" name="redirect_to">
         <div class="inside alert alert-success">
             <div class="row">
               <div class="col-md-12">
@@ -27,6 +23,3 @@
           </div>
         </form>
       </div>
-    </div>
-  </div>
-</div>

@@ -2,7 +2,7 @@
   <div class="postbox-container">
     <div class="postbox">
       <span>
-        <h4 class='hndle'>REGISTER</h4>
+        <h1 class='hndle'>REGISTER IN CUTEPUPPYTIME</h1>
       </span>
       <div id="container-register" class="alert alert-warning">
       <br>
@@ -312,7 +312,7 @@
             <div class="row">
               <div class="col-md-12">
                 <div class="form-group">  
-                  <h6>Are you able to ship to the following:<br>
+                  <h6>What is included in the price?<br>
                   <div class="row">
                   <div class="col-md-6"> 
                   <input type="checkbox" name="montreal" id="montreal"> Montreal, Canada
@@ -359,7 +359,7 @@
                   <label>How would you like to be paid?</label>
                   <select id="howpay" name="howpay" class="form-control">
                     <option value="">Choose One</option>
-                    <option value="PayPal (Instant)">PayPal (Instant)</option>
+                    <option value="Stripe">Stripe</option>
                     <option value="Wire Transfer">Wire Transfer</option>                      
                   </select>
                 </div>
