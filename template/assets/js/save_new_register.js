@@ -100,8 +100,8 @@ function save_new_register(){
                 vancouver: vancouver,
                 anchorage: anchorage 
             };
-            jQuery.post("https://cutepuppytime.com/wp-admin/admin-ajax.php", data, function(response) {
+            jQuery.post('admin-ajax.php', data, function(response) {
+              jQuery("html,body").scrollTop();
               jQuery("#container-register").html((response));
-              jQuery('html, body').animate({scrollTop: 0}, 0);
             }); 
 }

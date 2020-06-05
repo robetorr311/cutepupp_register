@@ -45,7 +45,7 @@ foreach ($results_disabled as $disabled) {
     <td> <?php echo $disabled->email; ?> </td> 
     <td>
       <button type="button" class="button button-primary" onclick="active('<?php echo $disabled->id; ?>')">Active</button>
-      <a type="button" class="button button-primary" href="<?php echo get_site_url().'/view_register/?id='.$disabled->id; ?>" target="blank">View register</a>
+      <a type="button" class="button button-primary" href="<?php echo get_site_url().'/index.php/view_register/?id='.$disabled->id; ?>" target="blank">View register</a>
       <button type="button" class="button button-primary" onclick="deleteregister('<?php echo $disabled->id; ?>')">Delete</button>
     </td>
 </tr>

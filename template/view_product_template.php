@@ -43,4 +43,16 @@ jQuery(document).ready( function($) {
     "lengthMenu":[[10,25,50,100,200,-1],[10,25,50,100,200,"All"]]    
   });    
 });  
+function deleteproduct(id){
+    if (confirm("Are you sure?")) {
+    var data= {
+        action:'deleteproduct',
+        id: id
+    };
+    jQuery.post("https://cutepuppytime.com/wp-admin/admin-ajax.php", data, function(response) {
+      location.reload();
+    });
+    }
+    return false;
+}
 </script>

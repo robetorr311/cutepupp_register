@@ -4,15 +4,17 @@
       <div id="container-product" class="alert alert-warning">
       <br>
         <form id="loginForm" action="<?php echo site_url( '/wp-login.php' ); ?>" method="POST"> 
-        <span>
-          <h4>Login</h4>
-        </span>
+        <h1>
+          <span class="entry-title" style="font-size:5em;">
+           Log in
+          </span>
+        </h1>
         <input type="hidden" value="<?php echo site_url(); ?>" name="redirect_to">
         <div class="inside alert alert-success">
-            <div class="row">
+            <h4><div class="row">
               <div class="col-md-12">
                 <div class="form-group">  
-                <label for="log">User Login </label>
+                User Login
                   <input type="text" id="log" name="log" class="form-control" placeholder="User Login">
                 </div>
               </div>
@@ -20,7 +22,7 @@
             <div class="row">
               <div class="col-md-12">
                 <div class="form-group">  
-                <label for="pwd">User password </label>
+                User password
                   <input type="password" id="pwd" name="pwd" class="form-control" placeholder="User password">
                 </div>
               </div>
@@ -45,11 +47,12 @@
               </div>
               <div class="col-md-6">
                 <div class="form-group">
-                  <a href="<?php echo get_site_url().'/register-in-cutepuppytime/'; ?>" class="text-muted">Create an account</a>
+                  <a href="<?php echo get_site_url().'/register-in-cutepuppytime/'; ?>" class="text-muted"><i class="fa fa-user"></i> Create an account</a>
                 </div>
               </div>              
               </div>
             </div>
+            </h4>
           </div>
         </form>
       </div>

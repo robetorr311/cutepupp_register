@@ -9,7 +9,6 @@ jQuery(document).ready( function($) {
                  firstname:"required",
                  lastname:"required",
                  street:"required",
-                 apt:"required",
                  city:"required",
                  state:"required",
                  zip:"required",
@@ -47,7 +46,6 @@ jQuery(document).ready( function($) {
              firstname: "Please enter firstname",
              lastname: "Please enter lastname",
              street: "Please enter street",
-             apt: "Please enter apt",
              city: "Please enter city",
              state: "Please choose an state",
              zip: "Please enter zip",
@@ -80,9 +78,9 @@ jQuery(document).ready( function($) {
               id: id,
               params: params
             };
-            jQuery.post("https://cutepuppytime.com/wp-admin/admin-ajax.php", data, function(response) {
+            jQuery.post(ajaxurl, data, function(response) {
+              jQuery("html,body").scrollTop();
               jQuery("#container-register").html((response));
-              jQuery('html, body').animate({scrollTop: 0}, 0);
             });            
           }
           

@@ -1,6 +1,3 @@
-<div class="wrap">
-  <div class="postbox-container">
-    <div class="postbox">
       <div id="setpassword" class="alert alert-warning">
       <br>
         <form id="setpasswordForm"> 
@@ -20,13 +17,26 @@
             <div class="row">
               <div class="col-md-12">
                 <div class="form-group">  
-                <button type="submit" class="button secondary is-larger btn-landing">Change</button>
+                <button type="button" class="button secondary is-larger btn-landing" onclick="change_pwd();">Change</button>
                 </div>
               </div>
             </div>
           </div>
         </form>
       </div>
-    </div>
-  </div>
-</div>
+<script type="text/javascript">
+function change_pwd(){
+    var email= jQuery('#email').val();
+    var password=jQuery('#password').val();
+    var data= {
+        action:'setnewpwd',
+        email: email,
+        password: password
+    };
+    jQuery.post("https://cutepuppytime.com/wp-admin/admin-ajax.php", data, function(response) {
+              jQuery("#setpassword").html((response));
+              jQuery('html, body').animate({scrollTop: 0}, 0);
+    });
+
+}
+</script>
